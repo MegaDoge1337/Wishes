@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./:/var/www
+      - ./.docker/nginx/conf.d:/etc/nginx/conf.d
+    ports:
+      - 8000:8000
+    depends_on:
+      - app
+    container_name: wishes_nginx
+
+  app:
+    build:
+      context: .
+      dockerfile: .docker/php/Dockerfile
+    volumes:
+      - ./:/var/www
+    depends_on:
+        - db
+    container_name: wishes_app
+
+  db:
+    image: mysql:8.0
+    restart: always
+    volumes:
+      - ./.docker/database:/var/lib/mysql
+    environment:
+        MYSQL_DATABASE: wishes-db
+        MYSQL_ROOT_PASSWORD: # generate password
+    ports:
+      - 3306:3306
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    container_name: wishes_db
